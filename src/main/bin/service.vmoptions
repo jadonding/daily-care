@@ -1,0 +1,7 @@
+-server
+-Xms1g
+-Xmx1g
+-Dfile.encoding=UTF-8
+-Djava.awt.headless=true
+-Denv=dev
+-Duser.timezone=Asia/Shanghai
