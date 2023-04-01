@@ -1,14 +1,9 @@
-# springboot-demo
-Spring Boot + Gradle + Github Action + Docker + Ghcr
+# daily care
+
+异地恋每日关心，体现程序员男友的贴心关怀
 
 ## 1. 工程介绍
-- Spring Boot 工程脚手架，快速构建新项目
-- 使用 Gradle 构建工具
-- Docker 镜像构建
-- 含有 Github Action 自动构建 Docker 镜像并推送到 Github Container Registry
-- 提供默认log4j2配置，日志输出到文件
-- 提供zip打包脚本，打包成zip文件
-- 提供服务启动、调试、停止、重启脚本（Linux环境下）
+- 使用[springboot-demo](https://github.com/jadonding/springboot-demo.git)快速搭建
 
 ## 2. 使用方式
 
@@ -64,7 +59,7 @@ Spring Boot + Gradle + Github Action + Docker + Ghcr
 
 构建docker镜像
 ```shell
-docker build -t springboot-demo .
+docker build -t daily-care .
 ```
 
 ### 2.5. 使用Github Action构建的Docker镜像
@@ -74,18 +69,18 @@ docker build -t springboot-demo .
 
 以本项目为例，拉取镜像
 ```shell
-docker pull ghcr.io/jadonding/springboot-demo:latest
+docker pull ghcr.io/jadonding/daily-care:latest
 ```
 
 使用镜像
 ```shell
 docker run -d  \
---name springboot-demo  \
+--name daily-care  \
 -p 8899:8899 \
--v /opt/package/springboot-demo/config:/app/config \
--v /opt/package/springboot-demo/logs:/app/logs \
+-v /opt/package/daily-care/config:/app/config \
+-v /opt/package/daily-care/logs:/app/logs \
 --restart=always \
-ghcr.io/jadonding/springboot-demo:latest
+ghcr.io/jadonding/daily-care:latest
 ```
 
 参数说明：
@@ -94,10 +89,10 @@ ghcr.io/jadonding/springboot-demo:latest
 - -p 端口映射
 - -v 挂载目录
 - --restart=always 自动重启
-- ghcr.io/jadonding/springboot-demo:latest 镜像名称
+- ghcr.io/jadonding/daily-care:latest 镜像名称
 - /app/config 容器内的配置文件目录
 - /app/logs 容器内的日志目录
-- /opt/package/springboot-demo/config 宿主机的配置文件目录
-- /opt/package/springboot-demo/logs 宿主机的日志目录
+- /opt/package/daily-care/config 宿主机的配置文件目录
+- /opt/package/daily-care/logs 宿主机的日志目录
 
 建议将配置文件和日志文件挂载到宿主机，这样可以方便查看日志和修改配置文件

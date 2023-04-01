@@ -13,7 +13,7 @@ RUN unzip build/distributions/*.zip
 # remove zip package
 RUN rm -f build/distributions/*.zip
 # rename dir
-RUN mv springboot-demo/ app
+RUN mv daily-care/ app
 # define workdir0
 WORKDIR /app
 
