@@ -1,0 +1,332 @@
+import java.text.SimpleDateFormat
+import java.util.regex.Pattern
+
+configurations {
+    env
+
+    all {
+        resolutionStrategy.cacheChangingModulesFor 0, 'seconds'
+        // remove logging、log4j12
+        exclude group: 'org.springframework.boot', module: 'spring-boot-starter-logging'
+        exclude group: 'org.slf4j', module: 'slf4j-log4j12'
+    }
+}
+
+buildscript {
+    repositories {
+        mavenCentral()
+    }
+    dependencies {
+        classpath "io.spring.gradle:dependency-management-plugin:1.1.0"
+    }
+    dependencies {
+        classpath("org.springframework.boot:spring-boot-gradle-plugin:${springBootVersion}")
+    }
+}
+
+apply plugin: 'java'
+apply plugin: 'java-library'
+apply plugin: 'maven-publish'
+apply plugin: 'io.spring.dependency-management'
+apply plugin: 'org.springframework.boot'
+
+def groupIdParam = project.groupId
+def artifactIdParam = project.artifactId
+def versionParam = String.valueOf(project.version)
+def cusVersion = ""
+def isSnapshot = Boolean.valueOf(project.isSnapshot)
+def buildDate = new SimpleDateFormat("yyyyMMdd").format(new Date())
+def versionWithoutBuildDate = appendVersion(versionParam, isSnapshot, cusVersion)
+def versionWithBuildDate = appendVersion(versionParam, isSnapshot, cusVersion, buildDate)
+group = groupIdParam
+version = appendVersion(versionParam, isSnapshot, cusVersion, buildDate)
+sourceCompatibility = 1.8
+compileJava.options.encoding = 'UTF-8'
+
+repositories {
+    mavenCentral()
+}
+
+dependencyManagement {
+    dependencies {
+        dependencySet(group:"org.springframework.boot", version: "${springBootVersion}") {
+            entry "spring-boot-starter-web"
+            entry "spring-boot-configuration-processor"
+        }
+
+        dependencySet(group:"org.springframework", version: "${springVersion}") {
+            entry "spring-core"
+            entry "spring-context"
+            entry "spring-beans"
+            entry "spring-expression"
+            entry "spring-aop"
+            entry "spring-jdbc"
+            entry "spring-tx"
+            entry "spring-web"
+            entry "spring-webmvc"
+            entry "spring-test"
+        }
+    }
+
+}
+
+dependencies {
+
+    //springboot
+    implementation "org.springframework.boot:spring-boot-starter-web:${springBootVersion}"
+
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
+    implementation("org.springframework.boot:spring-boot-configuration-processor:${springBootVersion}")
+    // 通用工具包
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    compileOnly 'org.projectlombok:lombok:1.18.26'
+    annotationProcessor 'org.projectlombok:lombok:1.18.26'
+    implementation 'org.apache.commons:commons-collections4:4.4'
+
+
+    //implementation 'com.github.oshi:oshi-core:6.3.2'
+    //implementation 'com.taobao.text:text-ui:0.0.3'
+
+    //log4j2
+    implementation 'org.apache.logging.log4j:log4j-slf4j-impl:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-api:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-core:2.20.0'
+    implementation 'org.apache.logging.log4j:log4j-jul:2.20.0'
+
+    //implementation 'org.springframework:spring-core:5.3.24'
+
+    // 配置中心
+    //implementation 'com.ctrip.framework.apollo:apollo-client:2.1.0'
+
+
+    // 数据库驱动
+    //implementation "com.oracle:oracle:ojdbc6"
+    //implementation 'mysql:mysql-connector-java:8.0.27'
+    //implementation 'org.postgresql:postgresql:9.3-1104-jdbc41'
+    //implementation 'dm:DmJdbcDriver:18@jar'
+    //implementation 'com.baseSoft:kingbase8:8.6.0'
+    //implementation 'com.szbase:oscar-jdbc:16.0.0'
+
+
+    // 配置文件解析
+    //implementation group: 'org.yaml', name: 'snakeyaml', version: '1.33'
+    //implementation 'org.ini4j:ini4j:0.5.4'
+    //implementation 'com.fasterxml.jackson.dataformat:jackson-dataformat-properties:2.14.2'
+    //implementation 'com.fasterxml.jackson.core:jackson-databind:2.14.2'
+    //implementation 'com.fasterxml.jackson.core:jackson-core:2.14.2'
+    //implementation 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
+    //annotationProcessor 'com.fasterxml.jackson.core:jackson-annotations:2.14.2'
+
+    // 强制依赖升级
+    implementation 'org.yaml:snakeyaml:2.0'
+
+    // junit5
+    testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.9.2'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.9.2'
+    testImplementation "org.springframework.boot:spring-boot-starter-test:${project.springBootVersion}"
+
+}
+
+def preZipDir = "${buildDir}/preZip/"
+
+def baseFrameworkDirPath = "${buildDir}/baseFramework/"
+
+
+//提取基础服务 目前包含skywalking agent模块
+task extractBaseFramework(type: Copy) {
+
+    //extarct files
+    configurations.env.filter { it.toString().endsWith(".zip") }.each {
+        from zipTree(it)
+    }
+    into(baseFrameworkDirPath)
+
+    includeEmptyDirs false
+
+    doFirst {
+        file(baseFrameworkDirPath).deleteDir()
+    }
+
+}
+
+// 清除现有的lib目录
+task clearJar(type: Delete) {
+    delete "$preZipDir\\lib"
+}
+
+// 将依赖包复制到lib目录
+task copyJar(type: Copy, dependsOn: 'clearJar') {
+    from configurations.runtimeClasspath
+    into "$preZipDir\\lib"
+}
+
+task copyResource(type: Copy, dependsOn: 'cleanResource') {
+
+    from('src/main/resources') {
+        include '**/*.yml'
+        include '**/*.yaml'
+        include '**/*.ini'
+        include '**/*.properties'
+        include '/db/**'
+        include '*.xml'
+    }
+    into "$preZipDir\\config"
+
+}
+
+
+task cleanResource(type: Delete) {
+    delete "$preZipDir\\resources"
+}
+
+task cleanOtherDirs(type: Delete) {
+    // 删除额外需要删除的目录列表
+    extDelete.split(",").each {
+        //println("delete dir: $it")
+        delete "$it"
+    }
+
+}
+
+clean {
+    dependsOn cleanOtherDirs
+}
+
+bootJar {
+    setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+    // 例外所有的jar
+    excludes = ["*.jar", "*.yml", "*.properties"]
+
+    // 指定依赖包的路径
+    def classPath = configurations.runtimeClasspath.files.collect { "lib/$it.name" }.join(' ')
+    classPath = classPath + ' ' + "config/"
+    manifest {
+        attributes 'Class-Path': classPath,
+                "Implementation-Title": project.artifactId,
+                "Implementation-Version": versionWithoutBuildDate
+    }
+}
+
+task copyBootJar(type: Copy, dependsOn: 'bootJar') {
+    from("$buildDir\\libs") {
+        include "*.jar"
+    }
+    into(preZipDir)
+
+    // delete boot jar
+    //doLast {
+    //    delete "$buildDir\\libs"
+    //}
+}
+
+sourceSets {
+    main {
+        java { srcDir 'src/main/java' }
+        resources {
+            srcDirs 'src/main/java'
+            srcDirs 'src/main/resources'
+            exclude '**/*.java'
+        }
+        // 资源文件合并到 classes, 方便取其中的资源i18n等资源
+        output.resourcesDir = java.outputDir
+    }
+    test {
+        java { srcDir 'src/test/java' }
+        resources {
+            srcDirs 'src/test/java'
+            srcDirs 'src/test/resources'
+            exclude '**/*.java'
+        }
+        // 资源文件合并到 classes
+        output.resourcesDir = java.outputDir
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
+
+def static setFileFormat(dirPath, suffixs, isDos2Unix) {
+//    println "setFileFormat: " + dirPath + ", " + suffixs
+    def suffixs2Regex = ""
+    suffixs.each() { suffix ->
+        suffixs2Regex = suffixs2Regex + Pattern.quote(suffix) + "|"
+    }
+    new File(dirPath).eachFileMatch(~/.*\.($suffixs2Regex)/) { file ->
+        if (file.size() > 0) {
+            def lineList = file.readLines('UTF-8')
+            def content = lineList.join(isDos2Unix ? '\n' : '\r\n')
+            file.write(content, 'UTF-8')
+        }
+//        println "setFileFormat" + ": " + file.name
+    }
+
+}
+
+def projectDir = project.getProjectDir().getPath()
+
+task setFileFormat(type: DefaultTask) {
+    setFileFormat(projectDir + '/src/main/bin', ['sh'], true)
+}
+task preZip(type: Copy, dependsOn: [setFileFormat]) {
+    //clean prezip
+    //delete "$preZipDir"
+    dependsOn copyBootJar, clearJar, copyJar, cleanResource, copyResource, extractBaseFramework
+
+    from(baseFrameworkDirPath)
+
+    //启动脚本
+    from("src/main/bin")
+
+    into(preZipDir)
+}
+
+
+task zip(type: Zip, dependsOn: [preZip]) {
+    baseName = "${artifactIdParam}".toUpperCase()
+    // lib目录的清除和复制任务
+    dependsOn preZip
+
+    // 忽略重复的文件
+    setDuplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+
+    from("${preZipDir}") {
+        include "*.sh"
+        fileMode 0755
+    }
+
+    from("${preZipDir}") {
+        include "**/*"
+    }
+
+
+    //from("$buildDir\\libs") {
+    //    include "*.jar"
+    //}
+
+    into "${artifactIdParam}"
+}
+
+task getVersion(type: DefaultTask) {
+    println versionWithoutBuildDate
+}
+
+def static appendVersion(String version, boolean isSnapshot, String... appendings) {
+
+    for (String appending : appendings) {
+
+        if (appending == null || "".equals(appending.trim())) {
+            // continue
+        } else {
+            version = version + "." + appending
+        }
+    }
+
+    if (isSnapshot) {
+        version = version + "-SNAPSHOT"
+    }
+
+    return version
+}
