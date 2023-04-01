@@ -12,6 +12,7 @@ import me.chanjar.weixin.mp.bean.template.WxMpTemplateMessage;
 import me.chanjar.weixin.mp.config.impl.WxMpDefaultConfigImpl;
 import me.chanjar.weixin.mp.config.impl.WxMpMapConfigImpl;
 import org.apache.commons.collections4.CollectionUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.boot.configurationprocessor.json.JSONArray;
 import org.springframework.boot.configurationprocessor.json.JSONObject;
 
@@ -32,6 +33,8 @@ public class Pusher {
         WxMpService wxMpService = new WxMpServiceImpl();
         wxMpService.setWxMpConfigStorage(wxStorage);
         List<ReceiverInfoDTO> receiverList = weChatConfig.getReceiverList();
+        String sweetWords = SweetWords.getSweetWords(apiConfigProperties.getTianApiKey());
+        String goldenSentence = SweetWords.getGoldenSentence();
         if (CollectionUtils.isEmpty(receiverList)) {
             log.error("没有设置接收者信息");
             return;
@@ -69,12 +72,12 @@ public class Pusher {
             templateMessage.addData(new WxMpTemplateData("weather", weatherDTO.getWeather(), "#00FFFF"));
             templateMessage.addData(new WxMpTemplateData("lowestTemperature", split[0] + "℃" + "", "#173177"));
             templateMessage.addData(new WxMpTemplateData("highestTemperature", split[1] + "", "#FF6347"));
-            templateMessage.addData(new WxMpTemplateData("loveWords", SweetWords.getSweetWords(apiConfigProperties.getTianApiKey()), "#FF69B4"));
+            templateMessage.addData(new WxMpTemplateData("loveWords", StringUtils.defaultString(sweetWords), "#FF69B4"));
             templateMessage.addData(new WxMpTemplateData("loveDays",
                 MemorialDayUtil.after(receiverInfoDTO.getLoveDay()) + "", "#FF1493"));
             templateMessage.addData(new WxMpTemplateData("birthDays",
                 MemorialDayUtil.after(receiverInfoDTO.getBirthday()) + "", "#FFA500"));
-            templateMessage.addData(new WxMpTemplateData("goldenSentence", SweetWords.getGoldenSentence() + "", "#C71585"));
+            templateMessage.addData(new WxMpTemplateData("goldenSentence", StringUtils.defaultString(goldenSentence), "#C71585"));
             String tips = MemorialDayUtil.getNotes(receiverInfoDTO);
             templateMessage.addData(new WxMpTemplateData("tips", tips, "#FF0000"));
             try {
