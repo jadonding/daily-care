@@ -4,3 +4,30 @@ logging:
   level:
     root: info
   config: classpath:log4j2.xml
+
+jdblg:
+  # 每天8点执行一次
+  cron: 0 30 8 * * ?
+  wechat:
+    # 微信公众平台beta测试号信息，到下面链接获取
+    # https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index
+    appId: <你的appID>
+    appSecret: <你的appsecret>
+    templateId: <消息模板ID>
+    # 可以设置多个接收者，每个接收者可以设置城市、生日、恋爱纪念日
+    # 支持此功能，但是，渣男不得house！！！
+    receiverList:
+      - open-id: <接收者微信号，需要在微信公众平台关注测试号>
+        city: <所在城市，查询天气需要使用>
+        birthday: <生日，格式为yyyy-MM-dd，查询生日需要使用>
+        birthday-tips: 今天是你生日，祝你生日快乐！
+        love-day: <恋爱纪念日，格式为yyyy-MM-dd，查询恋爱纪念日需要使用>
+        love-day-tips: 今天是恋爱纪念日！
+        last-menstruation-date: <上次月经开始时间，格式为yyyy-MM-dd，查询下次月经需要使用>
+        # <月经周期，单位为天，查询下次月经需要使用，一般28-31天，这个间隔很玄学，可能需要经常修改>
+        menstruation-cycle: 29
+  api-config:
+    # 天行数据 申请土味情话API key https://www.tianapi.com/apiview/80
+    tian-api-key: <天行数据api key>
+    # 聚合数据 申请天气API key https://www.juhe.cn/docs/api/id/39
+    juhe-api-key: <聚合数据api key>

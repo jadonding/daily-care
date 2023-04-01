@@ -1,0 +1,10 @@
+{{date.DATA}}
+{{tips.DATA}}
+天气：{{weather.DATA}}
+最低温度：{{lowestTemperature.DATA}}
+最高温度：{{highestTemperature.DATA}}
+今天是我们恋爱的第 {{loveDays.DATA}} 天
+宝宝已经来到这个世界 {{birthDays.DATA}} 天
+
+{{loveWords.DATA}}
+{{goldenSentence.DATA}}
