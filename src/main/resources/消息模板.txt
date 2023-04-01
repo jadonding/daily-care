@@ -5,6 +5,6 @@
 最高温度：{{highestTemperature.DATA}}
 今天是我们恋爱的第 {{loveDays.DATA}} 天
 宝宝已经来到这个世界 {{birthDays.DATA}} 天
+{{goldenSentence.DATA}}
 
 {{loveWords.DATA}}
-{{goldenSentence.DATA}}

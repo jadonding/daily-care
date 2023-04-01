@@ -25,7 +25,7 @@ public class SweetWords {
      * logger
      **/
     private static final Logger logger = LoggerFactory.getLogger(SweetWords.class);
-    private static List<String> goldenSentenceList = new ArrayList<>();
+    private static final List<String> goldenSentenceList = new ArrayList<>();
 
     /**
      * 载入金句库
