@@ -6,8 +6,8 @@ logging:
   config: classpath:log4j2.xml
 
 jdblg:
-  # 每天8点执行一次
-  cron: 0 30 8 * * ?
+  # 每天8点半执行一次
+  cron: '0 30 8 * * ?'
   wechat:
     # 微信公众平台beta测试号信息，到下面链接获取
     # https://mp.weixin.qq.com/debug/cgi-bin/sandboxinfo?action=showinfo&t=sandbox/index
