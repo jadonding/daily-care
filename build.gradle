@@ -84,7 +84,7 @@ dependencies {
     compileOnly 'org.projectlombok:lombok:1.18.26'
     annotationProcessor 'org.projectlombok:lombok:1.18.26'
     implementation 'org.apache.commons:commons-collections4:4.4'
-    implementation group: 'com.github.binarywang', name: 'weixin-java-mp', version: '4.4.0'
+    implementation group: 'com.github.binarywang', name: 'weixin-java-mp', version: '4.5.0'
 
 
 
@@ -181,19 +181,6 @@ task copyResource(type: Copy, dependsOn: 'cleanResource') {
 
 task cleanResource(type: Delete) {
     delete "$preZipDir\\resources"
-}
-
-task cleanOtherDirs(type: Delete) {
-    // 删除额外需要删除的目录列表
-    extDelete.split(",").each {
-        //println("delete dir: $it")
-        delete "$it"
-    }
-
-}
-
-clean {
-    dependsOn cleanOtherDirs
 }
 
 bootJar {

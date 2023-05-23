@@ -66,7 +66,7 @@ public class SweetWords {
         } catch (Exception e) {
             logger.error(e.getMessage(), e);
         }
-        return str;
+        return str.replace("\n", " ");
     }
 
     public static String getGoldenSentence() {

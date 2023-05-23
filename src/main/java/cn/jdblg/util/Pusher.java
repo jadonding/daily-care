@@ -33,8 +33,16 @@ public class Pusher {
         WxMpService wxMpService = new WxMpServiceImpl();
         wxMpService.setWxMpConfigStorage(wxStorage);
         List<ReceiverInfoDTO> receiverList = weChatConfig.getReceiverList();
+        // 保证土味情话的长度不超过20
         String sweetWords = SweetWords.getSweetWords(apiConfigProperties.getTianApiKey());
-        String goldenSentence = SweetWords.getGoldenSentence();
+        for (int i = 0; i < 20; i++) {
+            // 每天可以免费请求100次，这里尝试20次
+            if (sweetWords.length() <= 20) {
+                break;
+            }
+            sweetWords = SweetWords.getSweetWords(apiConfigProperties.getTianApiKey());
+        }
+        //String goldenSentence = SweetWords.getGoldenSentence();
         if (CollectionUtils.isEmpty(receiverList)) {
             log.error("没有设置接收者信息");
             return;
@@ -68,18 +76,18 @@ public class Pusher {
 
             //接口
             templateMessage.addData(new WxMpTemplateData("date",
-                weatherDTO.getDate() + "  " + MemorialDayUtil.getWeekOfDate(new Date()), "#00BFFF"));
-            templateMessage.addData(new WxMpTemplateData("weather", weatherDTO.getWeather(), "#00FFFF"));
-            templateMessage.addData(new WxMpTemplateData("lowestTemperature", split[0] + "℃" + "", "#173177"));
-            templateMessage.addData(new WxMpTemplateData("highestTemperature", split[1] + "", "#FF6347"));
-            templateMessage.addData(new WxMpTemplateData("loveWords", StringUtils.defaultString(sweetWords), "#FF69B4"));
+                weatherDTO.getDate() + "  " + MemorialDayUtil.getWeekOfDate(new Date()), null));
+            templateMessage.addData(new WxMpTemplateData("weather", weatherDTO.getWeather(), null));
+            templateMessage.addData(new WxMpTemplateData("lowestTemperature", split[0] + "", null));
+            templateMessage.addData(new WxMpTemplateData("highestTemperature", split[1] + "", null));
+            templateMessage.addData(new WxMpTemplateData("loveWords", StringUtils.defaultString(sweetWords), null));
             templateMessage.addData(new WxMpTemplateData("loveDays",
-                MemorialDayUtil.after(receiverInfoDTO.getLoveDay()) + "", "#FF1493"));
+                MemorialDayUtil.after(receiverInfoDTO.getLoveDay()) + "", null));
             templateMessage.addData(new WxMpTemplateData("birthDays",
-                MemorialDayUtil.after(receiverInfoDTO.getBirthday()) + "", "#FFA500"));
-            templateMessage.addData(new WxMpTemplateData("goldenSentence", StringUtils.defaultString(goldenSentence), "#C71585"));
+                MemorialDayUtil.after(receiverInfoDTO.getBirthday()) + "", null));
+            //templateMessage.addData(new WxMpTemplateData("goldenSentence", StringUtils.defaultString(goldenSentence), null));
             String tips = MemorialDayUtil.getNotes(receiverInfoDTO);
-            templateMessage.addData(new WxMpTemplateData("tips", tips, "#FF0000"));
+            templateMessage.addData(new WxMpTemplateData("tips", tips, null));
             try {
                 log.info("推送消息内容:{}", JsonUtil.toJson(templateMessage));
                 String res = wxMpService.getTemplateMsgService()
